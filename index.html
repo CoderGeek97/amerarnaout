@@ -1031,7 +1031,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
   const isCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
-  const assetUrl = "./astronaut.glb"; // keep this file beside the HTML
+  const assetCandidates = [
+    "./astronaut.glb",
+    "./Meshy_AI_Lunar_Daydream_0622123350_texture-compressed.glb"
+  ];
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 80);
@@ -1109,47 +1112,61 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   });
 
   const loader = new GLTFLoader();
-  loader.load(
-    assetUrl,
-    (gltf) => {
-      model = gltf.scene || gltf.scenes?.[0];
-      if (!model) throw new Error("GLB scene missing");
 
-      // Normalize the model so it fits the square area consistently.
-      const box = new THREE.Box3().setFromObject(model);
-      const size = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      box.getSize(size);
-      box.getCenter(center);
-
-      const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      const desiredHeight = 3.55; // tuned to sit inside the right-side hero box
-      const scale = desiredHeight / maxDim;
-
-      model.position.sub(center);
-      root.scale.setScalar(scale);
-      root.add(model);
-
-      // Mildly right-facing pose before cursor tracking kicks in.
-      root.rotation.set(baseRot.x, baseRot.y, baseRot.z);
-
-      loaded = true;
-      canvas.classList.add("in");
-      if (fallback) fallback.classList.remove("visible");
-      resize();
-      if (reduceMotion) {
-        renderer.render(scene, camera);
-      } else if (!raf) {
-        animate(0);
-      }
-    },
-    undefined,
-    (err) => {
-      console.warn("[hero3d] GLB failed to load:", err);
-      if (fallback) fallback.classList.add("visible");
-      canvas.style.display = "none";
+  function loadCandidate(index) {
+    const url = assetCandidates[index];
+    if (!url) {
+      throw new Error("No GLB candidates left to try");
     }
-  );
+
+    loader.load(
+      url,
+      (gltf) => {
+        model = gltf.scene || gltf.scenes?.[0];
+        if (!model) throw new Error("GLB scene missing");
+
+        // Normalize the model so it fits the square area consistently.
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        box.getSize(size);
+        box.getCenter(center);
+
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const desiredHeight = 3.55; // tuned to sit inside the right-side hero box
+        const scale = desiredHeight / maxDim;
+
+        model.position.sub(center);
+        root.scale.setScalar(scale);
+        root.add(model);
+
+        // Mildly right-facing pose before cursor tracking kicks in.
+        root.rotation.set(baseRot.x, baseRot.y, baseRot.z);
+
+        loaded = true;
+        canvas.classList.add("in");
+        if (fallback) fallback.classList.remove("visible");
+        resize();
+        if (reduceMotion) {
+          renderer.render(scene, camera);
+        } else if (!raf) {
+          animate(0);
+        }
+      },
+      undefined,
+      (err) => {
+        console.warn("[hero3d] GLB failed to load from " + url + ":", err);
+        if (index + 1 < assetCandidates.length) {
+          loadCandidate(index + 1);
+          return;
+        }
+        if (fallback) fallback.classList.add("visible");
+        canvas.style.display = "none";
+      }
+    );
+  }
+
+  loadCandidate(0);
 
   function animate(ts) {
     if (!loaded) {
