@@ -1126,6 +1126,21 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
   root.scale.setScalar(SHARED_SCALE);
 
+  // ── Neck fill — hides the seam gap between head and body ──────────────────
+  // A short cylinder sitting at the neck joint, matching the dark inner collar.
+  // It's static (parented to root, not headPivot) so it always bridges the gap
+  // regardless of how far the head rotates. Radius and height chosen to fully
+  // overlap the cut edges on both the head and body sides.
+  {
+    const neckFillGeo = new THREE.CylinderGeometry(0.118, 0.118, 0.16, 40, 1);
+    const neckFillMat = new THREE.MeshStandardMaterial({
+      color: 0x1a1410, roughness: 0.55, metalness: 0.18
+    });
+    const neckFill = new THREE.Mesh(neckFillGeo, neckFillMat);
+    neckFill.position.set(0.018, NECK_Y_RAW, 0.04); // centred on the actual neck axis
+    root.add(neckFill);
+  }
+
   let bodyReady = false, headReady = false;
   function onBothReady() {
     if (!bodyReady || !headReady) return;
