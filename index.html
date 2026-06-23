@@ -271,11 +271,11 @@ footer{padding:1.6rem 4rem;border-top:1px solid var(--line);display:flex;align-i
   body{cursor:auto}
   #grain{opacity:.04}
   #cr,#cd,#cl{display:none}
-  #nav{padding:1.2rem 1.5rem}
+  #nav{padding:1.2rem 1.5rem;z-index:1005}
   #nav.sc{padding:1rem 1.5rem}
-  .nmb{display:flex}
+  .nmb{display:flex;position:relative;z-index:1007}
   .nlk{
-    display:none;
+    display:flex;
     position:fixed;
     inset:0;
     background:rgba(240,237,231,.985);
@@ -286,10 +286,28 @@ footer{padding:1.6rem 4rem;border-top:1px solid var(--line);display:flex;align-i
     justify-content:center;
     gap:2.5rem;
     z-index:1000;
-    pointer-events:auto;
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(10px) scale(.985);
+    transform-origin:center;
+    transition:opacity .35s var(--ease-out),transform .45s var(--ease-out),visibility 0s linear .45s;
   }
   .ndo{display:none !important}
-  .nlk.open{display:flex}
+  .nlk.open{
+    pointer-events:auto;
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0) scale(1);
+    transition:opacity .35s var(--ease-out),transform .45s var(--ease-out),visibility 0s;
+  }
+  .nlk li{opacity:0;transform:translateY(12px);transition:opacity .35s var(--ease-out),transform .45s var(--ease-out)}
+  .nlk.open li{opacity:1;transform:translateY(0)}
+  .nlk.open li:nth-child(1){transition-delay:.04s}
+  .nlk.open li:nth-child(2){transition-delay:.08s}
+  .nlk.open li:nth-child(3){transition-delay:.12s}
+  .nlk.open li:nth-child(4){transition-delay:.16s}
+  .nlk.open li:nth-child(5){transition-delay:.2s}
   .nlk a{font-size:1.2rem;opacity:1}
   .hero{padding:0 1.5rem 3rem;min-height:600px}
   .hmt{padding:6rem 1.5rem 0;flex-direction:column;gap:.5rem}
@@ -650,7 +668,7 @@ a:focus-visible,.mbtn:focus-visible,.wkft:focus-visible,.chip:focus-visible,.nmb
     </div>
     <div class="exr">
       <span class="exn">05</span>
-      <span class="exna">Print Design</span>
+      <span class="exna">Print &amp; Collateral</span>
       <div class="extl"><span class="ext">InDesign</span><span class="ext">Illustrator</span></div>
       <span class="exnt">End-to-end production</span>
     </div>
