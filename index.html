@@ -1154,53 +1154,41 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
     const neck = new THREE.Group();
 
-    // Build a soft, rounded internal volume so the whole hollow cavity
-    // reads as filled from every visible angle.
+    // Main hidden body that fills the interior volume.
     const core = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.18, 0.42, 6, 24),
+      new THREE.SphereGeometry(0.22, 28, 20),
       cavityMaterial
     );
-    core.position.set(0, 0.10, -0.02);
-    core.rotation.z = 0.02;
+    core.position.set(0.01, 0.12, -0.03);
+    core.scale.set(1.15, 1.05, 1.10);
     neck.add(core);
 
-    const upperDome = new THREE.Mesh(
-      new THREE.SphereGeometry(0.18, 28, 18),
+    // Upper cap to close the last visible seam under the rim.
+    const upper = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15, 24, 16),
       cavityMaterial
     );
-    upperDome.position.set(0, 0.28, -0.01);
-    upperDome.scale.set(1.55, 1.05, 1.25);
-    neck.add(upperDome);
+    upper.position.set(0.01, 0.27, -0.01);
+    upper.scale.set(1.10, 0.86, 1.04);
+    neck.add(upper);
 
-    const midDome = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 28, 18),
+    // Small offset plug on the astronaut's right side where the final gap remains.
+    const rightPlug = new THREE.Mesh(
+      new THREE.SphereGeometry(0.085, 20, 14),
       cavityMaterial
     );
-    midDome.position.set(0, 0.14, -0.02);
-    midDome.scale.set(1.65, 1.15, 1.30);
-    neck.add(midDome);
+    rightPlug.position.set(0.11, 0.19, -0.005);
+    rightPlug.scale.set(1.0, 0.92, 0.9);
+    neck.add(rightPlug);
 
-    const lowerDome = new THREE.Mesh(
-      new THREE.SphereGeometry(0.14, 28, 18),
-      cavityMaterial
-    );
-    lowerDome.position.set(0, -0.05, -0.03);
-    lowerDome.scale.set(1.60, 0.95, 1.18);
-    neck.add(lowerDome);
-
-    // Side plugs widen the fill so you do not see empty space at the edges
-    // when the head rotates left or right.
-    const sideL = new THREE.Mesh(
+    // Lower block to remove the remaining dark sliver near the collar line.
+    const lower = new THREE.Mesh(
       new THREE.SphereGeometry(0.12, 24, 16),
       cavityMaterial
     );
-    sideL.position.set(-0.06, 0.14, -0.02);
-    sideL.scale.set(1.25, 0.95, 1.10);
-    neck.add(sideL);
-
-    const sideR = sideL.clone();
-    sideR.position.x = 0.06;
-    neck.add(sideR);
+    lower.position.set(0.0, 0.0, -0.03);
+    lower.scale.set(1.22, 0.80, 1.08);
+    neck.add(lower);
 
     return neck;
   }
