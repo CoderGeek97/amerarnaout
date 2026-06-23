@@ -1202,49 +1202,59 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
   }
 
 
-  // ── Neck gap filler ────────────────────────────────────────────────────────
-  // The gap is sealed by TWO layers that work together:
-  //
-  //   1. collarCap  — a wide flat cylinder added to ROOT (static, never moves).
-  //                   This permanently covers the collar opening from below,
-  //                   regardless of which way the head is pointing.
-  //
-  //   2. neckFill   — a sphere added to headPivot (rotates WITH the head).
-  //                   It fills the hollow interior so no cavity is visible
-  //                   when the head turns left / right.
-  //
-  // Because collarCap is static it is THE definitive fix for the "gap when
-  // looking up" problem — it simply never moves away from the collar ring.
-
-  function makeCollarCap() {
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x1c0f0b, roughness: 1.0, metalness: 0.0
+  function makeNeckFill(material) {
+    const cavityMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1c0f0b,
+      roughness: 1.0,
+      metalness: 0.0
     });
-    // A short wide cylinder: radius 0.32 covers the full collar opening.
-    // Height 0.08 gives it enough depth to overlap both body and head shells.
-    const cap = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.32, 0.32, 0.08, 40),
-      mat
-    );
-    cap.position.set(0, NECK_Y_RAW, 0);
-    return cap;
-  }
 
-  function makeNeckFill() {
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x1c0f0b, roughness: 1.0, metalness: 0.0
-    });
     const neck = new THREE.Group();
 
-    // One big sphere fills the hollow interior when the head turns.
-    // Scaled wider than tall so it hugs the inside of the collar ring.
+    // Main hidden body that fills the interior volume.
     const core = new THREE.Mesh(
-      new THREE.SphereGeometry(0.30, 32, 24),
-      mat
+      new THREE.SphereGeometry(0.22, 28, 20),
+      cavityMaterial
     );
-    core.position.set(0, 0.06, 0);
-    core.scale.set(1.10, 1.0, 1.10);
+    core.position.set(0.01, 0.12, -0.03);
+    core.scale.set(1.15, 1.05, 1.10);
     neck.add(core);
+
+    // Upper cap to close the last visible seam under the rim.
+    const upper = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15, 24, 16),
+      cavityMaterial
+    );
+    upper.position.set(0.01, 0.27, -0.01);
+    upper.scale.set(1.10, 0.86, 1.04);
+    neck.add(upper);
+
+    // Small offset plug on the astronaut's right side where the final gap remains.
+    const rightPlug = new THREE.Mesh(
+      new THREE.SphereGeometry(0.085, 20, 14),
+      cavityMaterial
+    );
+    rightPlug.position.set(0.11, 0.19, -0.005);
+    rightPlug.scale.set(1.0, 0.92, 0.9);
+    neck.add(rightPlug);
+
+    // Lower block to remove the remaining dark sliver near the collar line.
+    const lower = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 24, 16),
+      cavityMaterial
+    );
+    lower.position.set(0.0, 0.0, -0.03);
+    lower.scale.set(1.22, 0.80, 1.08);
+    neck.add(lower);
+
+    // Tiny seam plug for the last exposed triangular gap on the collar edge.
+    const seamPlug = new THREE.Mesh(
+      new THREE.SphereGeometry(0.045, 16, 12),
+      cavityMaterial
+    );
+    seamPlug.position.set(0.14, 0.11, 0.0);
+    seamPlug.scale.set(1.8, 0.9, 1.3);
+    neck.add(seamPlug);
 
     return neck;
   }
@@ -1263,9 +1273,6 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
       });
 
       root.add(model);
-      // Static collar cap — permanently covers the collar opening from below.
-      // Sits on root (not headPivot) so it never tilts with the head.
-      root.add(makeCollarCap());
       bodyReady = true;
       onBothReady();
     },
@@ -1285,7 +1292,7 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
       model.position.set(0, -NECK_Y_RAW, 0);
 
       // Collar / seam filler: keeps the neck gap hidden when the head turns.
-      neckFill = makeNeckFill();
+      neckFill = makeNeckFill(bodyMaterial);
       neckFill.position.set(0, 0.01, 0);
       headPivot.add(neckFill);
 
