@@ -1154,29 +1154,38 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
     const neck = new THREE.Group();
 
-    // Full interior blocker to hide the hollow gap when the head turns.
-    const cavity = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.30, 0.34, 0.65, 32, 1, false),
+    // Interior volume built from soft rounded shapes so the gap reads as solid,
+    // without a hard rectangular block in front of the visor.
+    const backCap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.17, 24, 16),
       cavityMaterial
     );
-    cavity.position.y = 0.12;
-    neck.add(cavity);
+    backCap.position.set(0, 0.07, -0.03);
+    backCap.scale.set(1.08, 0.82, 1.12);
+    neck.add(backCap);
 
-    // Rounded cap to fill the upper inside volume of the helmet/neck.
-    const cap = new THREE.Mesh(
-      new THREE.SphereGeometry(0.29, 24, 16),
+    const midCap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15, 24, 16),
       cavityMaterial
     );
-    cap.position.y = 0.32;
-    cap.scale.y = 0.55;
-    neck.add(cap);
+    midCap.position.set(0, 0.18, -0.02);
+    midCap.scale.set(1.12, 0.86, 1.08);
+    neck.add(midCap);
 
-    // Small lower plug to prevent any visible void under the collar.
+    const topCap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.13, 24, 16),
+      cavityMaterial
+    );
+    topCap.position.set(0, 0.28, -0.01);
+    topCap.scale.set(1.08, 0.78, 1.05);
+    neck.add(topCap);
+
     const lowerPlug = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.24, 0.28, 0.18, 32, 1, false),
+      new THREE.SphereGeometry(0.11, 24, 16),
       cavityMaterial
     );
-    lowerPlug.position.y = -0.16;
+    lowerPlug.position.set(0, -0.05, -0.02);
+    lowerPlug.scale.set(1.18, 0.72, 1.10);
     neck.add(lowerPlug);
 
     return neck;
